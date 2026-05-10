@@ -22,7 +22,6 @@ import numpy as np
 
 # kornia 가용 여부 확인 (SuperPoint 특징점 추출)
 try:
-    import torch
     import kornia  # noqa: F401  (가용성 확인용)
     _KORNIA_AVAILABLE = True
 except ImportError:
