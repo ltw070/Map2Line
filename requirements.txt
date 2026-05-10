@@ -17,3 +17,8 @@ kornia>=0.7.0
 
 # Phase 2-3 (OCR 교차검증 — 기둥 번호 추출)
 easyocr>=1.7.0
+
+# Phase 2-4 (FastAPI 엔드포인트)
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
