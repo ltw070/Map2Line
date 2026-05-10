@@ -1,17 +1,8 @@
-# Phase 1
 opencv-python
 numpy
+scipy
 pytest
 pytest-cov
 flake8
 mypy
 bandit
-
-# Phase 2 (예정)
-# torch
-# easyocr
-
-# Phase 3 (예정)
-# fastapi
-# uvicorn
-# streamlit
