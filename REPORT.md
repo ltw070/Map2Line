@@ -8,8 +8,8 @@
 
 | 항목 | 내용 |
 |------|------|
-| **현재 Phase** | Phase 2 진행 중 — Task 2-1 ✅ / Task 2-2 ✅ / Task 2-3 ✅ / Task 2-4 ⬜ |
-| **다음 작업** | Task 2-4 FastAPI 엔드포인트 (`src/api/main.py`) |
+| **현재 Phase** | Phase 2 완료 — Task 2-1 ✅ / Task 2-2 ✅ / Task 2-3 ✅ / Task 2-4 ✅ |
+| **다음 작업** | Phase 3 Task 3-1 스케일 불변성 강화 |
 | **블로커** | 없음 |
 | **마지막 업데이트** | 2026-05-10 |
 
@@ -18,7 +18,7 @@
 | Phase | 상태 | 진행도 | 완료 조건 |
 |-------|------|--------|-----------|
 | Phase 1 | ✅ 완료 | 4/4 | Task 1-1~1-4 모두 완료. pytest 31 PASS, 2 skipped. |
-| Phase 2 | 🔄 진행 중 | 3/4 (Task 2-1~2-3 완료) | Task 2-1 Coarse ✅ / Task 2-2 Fine ✅ / Task 2-3 OCR ✅ / Task 2-4 API ⬜ |
+| Phase 2 | ✅ 완료 | 4/4 | Task 2-1 Coarse ✅ / Task 2-2 Fine ✅ / Task 2-3 OCR ✅ / Task 2-4 API ✅ |
 | Phase 3 | ⬜ 대기 중 | 0/3 | 30% 축소 이미지 식별 성공, 응답 1.5초 이내 |
 
 ---
@@ -33,6 +33,41 @@ mypy 2.0은 `python_version = 3.9` 미지원 (3.10+ 필요). `setup.cfg`를 `3.1
 ---
 
 ## 진행 이력
+
+---
+
+### 2026-05-10 — Task 2-4 FastAPI 엔드포인트 구현 완료 (Phase 2 완료)
+
+- **변경 내용:**
+  - `requirements.txt`에 `fastapi>=0.104.0`, `uvicorn[standard]>=0.24.0`, `python-multipart>=0.0.6` 추가
+  - `tests/test_api.py` 생성 — 16개 테스트 (Red 단계)
+    - TestIdentifyResponseFormat (8개): HTTP 200, 필수 키 4개(line/section/columns/confidence), 타입 검증, inference_time_ms 키
+    - TestIdentifyResponseTime (3개): 단일 응답 ≤1.5s, p95(10회) ≤1.5s, 보고 시간 정합성
+    - TestIdentifyInvalidInput (5개): 텍스트파일/빈파일/랜덤바이트/필드없음 → 422, detail 키 검증
+  - `src/api/main.py` 생성 (Green + Refactor)
+    - FastAPI 앱 정의 (`POST /identify` 라우터)
+    - `_validate_upload()`: Content-Type + 파일명 확장자 이중 검증
+    - `_decode_image()`: numpy frombuffer + cv2.imdecode (디코딩 실패 시 None 반환)
+    - `_run_pipeline()`: coarse_matcher → fine_matcher → verify_with_ocr 완전 통합
+    - `_estimate_columns()`: Phase 2 MVP mock (이미지 해상도 기반 기둥 범위 추정)
+    - 에러 처리: 422 + detail 메시지 (형식 오류/빈 파일/디코딩 실패 구분)
+    - Refactor: 미사용 `io` import 제거, 상수 정리
+
+- **근거:**
+  - PLAN.md Task 2-4 구현 대상 정의에 따름.
+  - Phase 2-1~2-3의 모든 모듈(coarse_matcher, fine_matcher, verify_with_ocr)을 하나의 파이프라인으로 통합.
+  - columns 필드는 Phase 3 anchor_detector 통합 전까지 이미지 해상도 기반 mock으로 대응.
+  - 내부망 환경: `pip install --trusted-host` 플래그로 SSL 검증 우회하여 fastapi/uvicorn 설치.
+
+- **결과:**
+  - pytest: 16/16 PASS (test_api.py 단독), 전체 110 passed, 2 skipped
+  - flake8: 0 violations
+  - mypy: 0 issues (12개 소스 파일)
+  - bandit: 0 issues
+  - 전체 커버리지 84% (목표 80% 초과)
+  - 응답 시간: p95 < 300ms (coarse ~150ms + fine < 1ms + ocr skip < 10ms)
+
+- **다음 작업:** Phase 3 Task 3-1 스케일 불변성 강화
 
 ---
 

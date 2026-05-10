@@ -308,11 +308,12 @@ Response:
 ```
 
 **TDD 체크리스트:**
-- [ ] Red: `TestClient`로 정상 응답 형식 검증
-- [ ] Red: 응답 시간 p95 ≤ 1.5s 테스트
-- [ ] Red: 잘못된 파일 형식 → 422 반환 테스트
-- [ ] Green: FastAPI 라우터 + 파이프라인 통합
-- [ ] SubAgent3 ‖ SubAgent4
+- [x] Red: `TestClient`로 정상 응답 형식 검증
+- [x] Red: 응답 시간 p95 ≤ 1.5s 테스트
+- [x] Red: 잘못된 파일 형식 → 422 반환 테스트
+- [x] Green: FastAPI 라우터 + 파이프라인 통합
+- [x] Refactor: unused import 제거, 상수/타입힌트/에러메시지 정리
+- [x] SubAgent3 ‖ SubAgent4 — pytest 16/16 PASS, flake8/mypy/bandit 0 issues
 
 ### Phase 2 완료 기준
 
@@ -388,7 +389,7 @@ Response:
 | Task 2-1 Coarse Matcher | ✅ 완료 |
 | Task 2-2 Fine Matcher | ✅ 완료 |
 | Task 2-3 OCR 교차검증 | ✅ 완료 |
-| Task 2-4 FastAPI 엔드포인트 | ⬜ 대기 |
+| Task 2-4 FastAPI 엔드포인트 | ✅ 완료 |
 | Phase 3 전체 | ⬜ 대기 |
 
 ---

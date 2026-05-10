@@ -56,10 +56,8 @@ pip install -r requirements.txt
 ## 2. 빠른 시작
 
 > Phase 1이 완료되어 패턴 매칭 코어 기능을 직접 사용할 수 있습니다.
-> Phase 2-1 Coarse Matcher가 구현되어 CNN 기반 Top-K 후보 추출이 가능합니다.
-> Phase 2-2 Fine Matcher가 구현되어 Coarse 후보에서 최종 라인 선택이 가능합니다.
-> Phase 2-3 OCR 교차검증이 구현되어 기둥 번호 추출로 신뢰도 보정이 가능합니다.
-> API 서버(Phase 2-4)는 아직 구현 중입니다.
+> Phase 2가 완료되어 CNN Coarse + Fine 특징점 + OCR 교차검증 + FastAPI 엔드포인트가 모두 동작합니다.
+> `POST /identify` 엔드포인트로 도면 이미지를 업로드하면 라인·구역을 즉시 식별합니다.
 
 ```bash
 # 가상환경 활성화
@@ -108,8 +106,18 @@ curl -X POST http://localhost:8000/identify \
 
 | HTTP | 의미 |
 |------|------|
-| 422 | 이미지 파일 형식 오류 |
+| 422 | 이미지 파일 형식 오류 (JPEG/PNG 아님, 빈 파일, 디코딩 실패) |
 | 500 | 서버 내부 오류 |
+
+**응답 필드 (전체):**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `line` | string | 식별된 라인명 (예: `"Line_A_1"`) |
+| `section` | string | 구역 번호 (예: `"102"`, OCR 미적용 시 `"0"`) |
+| `columns` | string | 기둥 범위 mock (예: `"L1-L5"`) — Phase 3에서 실제 값으로 교체 예정 |
+| `confidence` | float | 신뢰도 0.0 ~ 1.0 (소수 4자리 반올림) |
+| `inference_time_ms` | float | 전체 파이프라인 처리 시간 (ms) |
 
 **Python 호출 예시:**
 ```python
