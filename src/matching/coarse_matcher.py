@@ -1,4 +1,4 @@
-"""Coarse Matcher — Task 2-1 Green 구현.
+"""Coarse Matcher — Task 2-1.
 
 ResNet-18 기반 CNN으로 Top-K 라인 후보를 반환한다.
 PyTorch 미설치 환경을 위한 numpy 폴백 구현 포함.
@@ -22,14 +22,14 @@ try:
     import torchvision.transforms as transforms
     from torchvision.models import resnet18, ResNet18_Weights
     _TORCH_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover
     _TORCH_AVAILABLE = False
 
 # --- 전역 상수 ---
-_INPUT_SIZE = (224, 224)
-_IMAGENET_MEAN = [0.485, 0.456, 0.406]
-_IMAGENET_STD = [0.229, 0.224, 0.225]
-_NUM_CLASSES = 1000  # ImageNet 클래스 수 (Mock 매핑용)
+_INPUT_SIZE: tuple = (224, 224)
+_IMAGENET_MEAN: List[float] = [0.485, 0.456, 0.406]
+_IMAGENET_STD: List[float] = [0.229, 0.224, 0.225]
+_NUM_CLASSES: int = 1000  # ImageNet 클래스 수 (Mock 매핑용)
 
 # --- 모델 싱글톤 ---
 _MODEL = None
@@ -63,12 +63,10 @@ def _generate_line_names(num_classes: int) -> List[str]:
 
     실제 서비스에서는 fine-tuning된 모델의 클래스 레이블로 교체한다.
     """
-    names: List[str] = []
-    for i in range(num_classes):
-        letter = chr(65 + (i % 26))   # A–Z 순환
-        group = i // 26 + 1
-        names.append(f"Line_{letter}_{group}")
-    return names
+    return [
+        f"Line_{chr(65 + (i % 26))}_{i // 26 + 1}"
+        for i in range(num_classes)
+    ]
 
 
 # 라인명 캐시 (전역 1회 생성)
@@ -107,13 +105,12 @@ def _infer_single_numpy(image: np.ndarray, top_k: int) -> Dict[str, Any]:
     start = time.perf_counter()
 
     raw_scores = rng.random(_NUM_CLASSES).astype(np.float64)
-    # softmax 적용
-    exp_scores = np.exp(raw_scores - raw_scores.max())
+    exp_scores = np.exp(raw_scores - raw_scores.max())  # 수치 안정 softmax
     probs = exp_scores / exp_scores.sum()
 
     top_indices = np.argsort(probs)[::-1][:top_k]
     candidates: List[Dict[str, Any]] = [
-        {"line": _LINE_NAMES[idx], "confidence": float(probs[idx])}
+        {"line": _LINE_NAMES[int(idx)], "confidence": float(probs[idx])}
         for idx in top_indices
     ]
 
@@ -122,10 +119,15 @@ def _infer_single_numpy(image: np.ndarray, top_k: int) -> Dict[str, Any]:
 
 
 def _infer_single(image: np.ndarray, top_k: int) -> Dict[str, Any]:
-    """단일 이미지 추론 디스패처."""
+    """단일 이미지 추론 디스패처 (PyTorch 우선, 없으면 NumPy 폴백)."""
     if _TORCH_AVAILABLE:
         return _infer_single_torch(image, top_k)
-    return _infer_single_numpy(image, top_k)
+    return _infer_single_numpy(image, top_k)  # pragma: no cover
+
+
+def _split_batch(image: np.ndarray) -> List[np.ndarray]:
+    """4D ndarray를 단일 이미지 list로 분리한다."""
+    return [image[i] for i in range(image.shape[0])]
 
 
 def coarse_matcher(
@@ -146,17 +148,17 @@ def coarse_matcher(
                 "inference_time_ms": float,
             }
         배치 입력: 위 형식의 list.
+
+    Raises:
+        TypeError: image가 ndarray 또는 list가 아닐 경우.
     """
-    is_batch = isinstance(image, list) or (
-        isinstance(image, np.ndarray) and image.ndim == 4
-    )
+    if isinstance(image, list):
+        return [_infer_single(img, top_k) for img in image]
 
-    if is_batch:
-        if isinstance(image, list):
-            images: List[np.ndarray] = image
-        else:
-            images = [image[i] for i in range(image.shape[0])]
-        return [_infer_single(img, top_k) for img in images]
+    if not isinstance(image, np.ndarray):
+        raise TypeError(f"image must be ndarray or list, got {type(image)}")
 
-    assert isinstance(image, np.ndarray)
+    if image.ndim == 4:
+        return [_infer_single(img, top_k) for img in _split_batch(image)]
+
     return _infer_single(image, top_k)
