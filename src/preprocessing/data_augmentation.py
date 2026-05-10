@@ -57,7 +57,7 @@ def augment_image(
         return _augment_resize(image, size or _DEFAULT_RESIZE_SIZE)
     elif augmentation_type == "noise":
         return _augment_noise(image, noise_std or _DEFAULT_NOISE_STD)
-    elif augmentation_type == "blur":
+    else:  # blur
         return _augment_blur(image, kernel_size or _DEFAULT_BLUR_KERNEL_SIZE)
 
 
@@ -76,10 +76,14 @@ def _augment_crop(image: np.ndarray, crop_ratio: float) -> np.ndarray:
     new_w = int(w * crop_ratio)
 
     # 중심 기준 랜덤 오프셋
-    y_offset = np.random.randint(0, h - new_h + 1) if h > new_h else 0
-    x_offset = np.random.randint(0, w - new_w + 1) if w > new_w else 0
+    y_offset = (
+        np.random.randint(0, h - new_h + 1) if h > new_h else 0
+    )
+    x_offset = (
+        np.random.randint(0, w - new_w + 1) if w > new_w else 0
+    )
 
-    return image[y_offset : y_offset + new_h, x_offset : x_offset + new_w]
+    return image[y_offset:y_offset + new_h, x_offset:x_offset + new_w]
 
 
 def _augment_resize(image: np.ndarray, size: tuple[int, int]) -> np.ndarray:
