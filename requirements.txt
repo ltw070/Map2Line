@@ -11,3 +11,6 @@ bandit
 torch>=2.0.0
 torchvision>=0.15.0
 pillow>=10.0.0
+
+# Phase 2-2 (Fine Matcher — SuperPoint 특징점 매칭)
+kornia>=0.7.0
