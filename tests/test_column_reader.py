@@ -132,8 +132,9 @@ class TestOcrMatch:
         img = _make_image(HIGH_RES_W)
         fine = _fine_result(line="Line_A", confidence=original_conf)
 
-        # EasyOCR를 mock하여 "Line_A" 포함 텍스트 반환
-        with patch("src.ocr.column_reader._ocr_read_text", return_value="Line_A 102"):
+        # _EASYOCR_AVAILABLE=True + _ocr_read_text mock으로 "Line_A" 포함 텍스트 반환
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value="Line_A 102"):
             result = verify_with_ocr(img, fine)
 
         expected = original_conf + 0.05
@@ -144,7 +145,8 @@ class TestOcrMatch:
         img = _make_image(HIGH_RES_W)
         fine = _fine_result(line="Line_A", confidence=0.80)
 
-        with patch("src.ocr.column_reader._ocr_read_text", return_value="Line_A 102"):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value="Line_A 102"):
             result = verify_with_ocr(img, fine)
 
         assert result["section"] == "102"
@@ -155,7 +157,8 @@ class TestOcrMatch:
         fine = _fine_result(line="Line_A", confidence=0.80)
         raw_text = "Line_A 102"
 
-        with patch("src.ocr.column_reader._ocr_read_text", return_value=raw_text):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value=raw_text):
             result = verify_with_ocr(img, fine)
 
         assert result["ocr_text"] == raw_text
@@ -165,7 +168,8 @@ class TestOcrMatch:
         img = _make_image(HIGH_RES_W)
         fine = _fine_result(line="Line_A", confidence=0.98)
 
-        with patch("src.ocr.column_reader._ocr_read_text", return_value="Line_A 102"):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value="Line_A 102"):
             result = verify_with_ocr(img, fine)
 
         assert result["confidence"] <= 1.0
@@ -185,7 +189,8 @@ class TestOcrMismatch:
         fine = _fine_result(line="Line_A", confidence=original_conf)
 
         # OCR이 Line_A를 포함하지 않는 텍스트를 반환
-        with patch("src.ocr.column_reader._ocr_read_text", return_value="Line_B 205"):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value="Line_B 205"):
             result = verify_with_ocr(img, fine)
 
         expected = original_conf - 0.10
@@ -196,7 +201,8 @@ class TestOcrMismatch:
         img = _make_image(HIGH_RES_W)
         fine = _fine_result(line="Line_A", confidence=0.80)
 
-        with patch("src.ocr.column_reader._ocr_read_text", return_value="Line_B 205"):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value="Line_B 205"):
             result = verify_with_ocr(img, fine)
 
         assert result["section"] == fine["section"]
@@ -206,7 +212,8 @@ class TestOcrMismatch:
         img = _make_image(HIGH_RES_W)
         fine = _fine_result(line="Line_A", confidence=0.05)
 
-        with patch("src.ocr.column_reader._ocr_read_text", return_value="Line_B 205"):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value="Line_B 205"):
             result = verify_with_ocr(img, fine)
 
         assert result["confidence"] >= 0.0
@@ -217,7 +224,8 @@ class TestOcrMismatch:
         img = _make_image(HIGH_RES_W)
         fine = _fine_result(line="Line_A", confidence=original_conf)
 
-        with patch("src.ocr.column_reader._ocr_read_text", return_value=""):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value=""):
             result = verify_with_ocr(img, fine)
 
         assert result["confidence"] == pytest.approx(original_conf, abs=1e-6)
@@ -265,7 +273,8 @@ class TestSideEffectFree:
         fine = _fine_result(line="Line_A", confidence=0.80)
         original = copy.deepcopy(fine)
 
-        with patch("src.ocr.column_reader._ocr_read_text", return_value="Line_A 102"):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value="Line_A 102"):
             verify_with_ocr(img, fine)
 
         assert fine == original
@@ -276,7 +285,8 @@ class TestSideEffectFree:
         fine = _fine_result(line="Line_A", confidence=0.80)
         original = copy.deepcopy(fine)
 
-        with patch("src.ocr.column_reader._ocr_read_text", return_value="Line_B 205"):
+        with patch("src.ocr.column_reader._EASYOCR_AVAILABLE", True), \
+             patch("src.ocr.column_reader._ocr_read_text", return_value="Line_B 205"):
             verify_with_ocr(img, fine)
 
         assert fine == original
