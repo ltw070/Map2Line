@@ -159,17 +159,23 @@ def _infer_at_scale(image: np.ndarray, scale: float) -> Dict[str, Any]:
         scaled_image = _resize_image(image, scale)
 
     # Coarse Matcher: Top-5 후보
-    coarse_result = coarse_matcher(scaled_image, top_k=5)
-    candidates = coarse_result["candidates"]
+    # coarse_matcher는 단일 이미지 입력 시 Dict 반환 (Union[Dict, List[Dict]] 중 Dict)
+    coarse_out = coarse_matcher(scaled_image, top_k=5)
+    if not isinstance(coarse_out, dict):
+        raise TypeError(f"coarse_matcher single image must return dict, got {type(coarse_out)}")
+    candidates: List[Dict[str, Any]] = coarse_out["candidates"]
 
     # Fine Matcher: Top-1 최종
-    fine_result = fine_matcher(scaled_image, candidates, top_k=1)
+    # fine_matcher는 top_k=1 시 Dict 반환 (Union[Dict, List[Dict]] 중 Dict)
+    fine_out = fine_matcher(scaled_image, candidates, top_k=1)
+    if not isinstance(fine_out, dict):
+        raise TypeError(f"fine_matcher top_k=1 must return dict, got {type(fine_out)}")
 
     return {
         "scale": scale,
-        "line": str(fine_result["line"]),
-        "section": str(fine_result["section"]),
-        "confidence": float(fine_result["confidence"]),
+        "line": str(fine_out["line"]),
+        "section": str(fine_out["section"]),
+        "confidence": float(fine_out["confidence"]),
     }
 
 
