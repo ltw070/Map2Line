@@ -133,6 +133,17 @@ SubAgent1 → SubAgent2 → SubAgent3 ┐ (병렬)
   numpy 폴백을 반드시 제공해야 합니다.
 - requirements.txt에는 scipy를 유지합니다 (외부망 배포 환경 대응).
 
+### Union 반환 타입 처리 패턴
+- `coarse_matcher()`와 `fine_matcher()`는 `Union[Dict, List[Dict]]`를 반환한다.
+- 단일 이미지 입력 후 dict 접근이 필요한 경우 반드시 `isinstance(result, dict)` 체크 후
+  `if not isinstance: raise TypeError(...)` 패턴으로 명시적 처리한다.
+- `assert isinstance(...)` 사용 금지 (bandit B101 위반).
+
+### Phase 3 confidence 절대값 기준
+- ResNet-18 softmax 출력은 1000개 클래스로 분배되어 개별 confidence ~0.001 수준이다.
+- Phase 3 테스트에서 confidence 절대값 0.3/0.7 등의 임계값 검증은 fine-tuning 완료 후 적용한다.
+- 현재는 `confidence > 0.0` (식별 성공 여부) 및 상대 비교 방식을 사용한다.
+
 ---
 
 ## 주요 파일 위치

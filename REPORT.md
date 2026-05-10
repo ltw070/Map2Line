@@ -8,8 +8,8 @@
 
 | 항목 | 내용 |
 |------|------|
-| **현재 Phase** | Phase 2 완료 — Task 2-1 ✅ / Task 2-2 ✅ / Task 2-3 ✅ / Task 2-4 ✅ |
-| **다음 작업** | Phase 3 Task 3-1 스케일 불변성 강화 |
+| **현재 Phase** | Phase 3 진행 중 — Task 3-1 ✅ 완료 |
+| **다음 작업** | Phase 3 Task 3-2 (배치 처리 최적화) |
 | **블로커** | 없음 |
 | **마지막 업데이트** | 2026-05-10 |
 
@@ -19,7 +19,7 @@
 |-------|------|--------|-----------|
 | Phase 1 | ✅ 완료 | 4/4 | Task 1-1~1-4 모두 완료. pytest 31 PASS, 2 skipped. |
 | Phase 2 | ✅ 완료 | 4/4 | Task 2-1 Coarse ✅ / Task 2-2 Fine ✅ / Task 2-3 OCR ✅ / Task 2-4 API ✅ |
-| Phase 3 | ⬜ 대기 중 | 0/3 | 30% 축소 이미지 식별 성공, 응답 1.5초 이내 |
+| Phase 3 | 진행 중 | 1/3 | Task 3-1 ✅ 스케일 불변성 / Task 3-2 ⬜ 배치 처리 / Task 3-3 ⬜ UI |
 
 ---
 
@@ -33,6 +33,40 @@ mypy 2.0은 `python_version = 3.9` 미지원 (3.10+ 필요). `setup.cfg`를 `3.1
 ---
 
 ## 진행 이력
+
+---
+
+### 2026-05-10 — Task 3-1 스케일 불변성 강화 구현 완료
+
+- **변경 내용:**
+  - `tests/test_scale_invariance.py` 신규 생성 — 18개 테스트 (5개 클래스)
+    - TestMultiscaleInference20Percent (4개): 20% 축소 이미지 구조/라인/신뢰도/앙상블 플래그
+    - TestMultiscaleInference30Percent (4개): 30% 축소 라인 식별 성공 (PRD §4.3 최소 요구사항)
+    - TestMultiscaleInference50Percent (3개): 50% 축소 구조/신뢰도 비교/scale_results 길이
+    - TestEnsembleAccuracyImprovement (4개): 멀티 vs 단일 스케일 비교, ensembled 플래그, 두 앙상블 메서드
+    - TestEnsembleTimeBudget (3개): 단일 1500ms 이내, p95 1500ms 이내, 보고 시간 정합성(±200ms)
+  - `src/matching/scale_optimizer.py` 신규 생성 — 멀티스케일 TTA 구현
+    - `multiscale_inference()`: 메인 함수 (scales, ensemble_method 파라미터)
+    - `_resize_image()`: cv2.INTER_AREA(축소)/INTER_LINEAR(확대) 분기
+    - `_infer_at_scale()`: coarse_matcher + fine_matcher 단일 스케일 추론
+    - `_get_weight()`: 스케일별 가중치 조회 (_DEFAULT_SCALE_WEIGHTS)
+    - `_ensemble_weighted_average()`: 라인별 가중 신뢰도 합산 후 정규화
+    - `_ensemble_max_confidence()`: 최대 신뢰도 스케일 결과 채택
+    - 스케일 가중치: {0.2: 0.5, 0.3: 0.8, 0.5: 0.6, 1.0: 1.0} (30% 최우선)
+
+- **근거:**
+  - PRD §4.3 성공 지표: "30% 축소 이미지도 라인 식별 성공"
+  - TTA 앙상블로 단일 스케일 대비 robust한 결과 도출
+  - 내부망 환경 PIL/scipy 미설치 대응: OpenCV + NumPy만 사용
+
+- **결과:**
+  - pytest: 18/18 PASS (test_scale_invariance.py), 전체 128 passed, 2 skipped
+  - flake8: 0 violations
+  - mypy: 0 issues
+  - bandit: 0 issues (assert → isinstance 체크 + TypeError raise 교체)
+  - 응답 시간: p95 < 500ms (4개 스케일, ResNet-18 내부 캐시 적용 후)
+
+- **다음 작업:** Phase 3 Task 3-2 배치 처리 최적화
 
 ---
 

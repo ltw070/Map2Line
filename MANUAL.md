@@ -131,6 +131,48 @@ with open("floor_crop.jpg", "rb") as f:
 print(res.json())
 ```
 
+### 멀티스케일 TTA 직접 사용 (Python API)
+
+`multiscale_inference()`를 사용하면 여러 축소 비율로 동시 추론 후 앙상블 결과를 얻을 수 있습니다.
+30% 이하 축소 이미지나 캡처 품질이 불확실할 때 권장합니다.
+
+```python
+import cv2
+from src.matching.scale_optimizer import multiscale_inference
+
+image = cv2.imread("floor_crop.jpg")
+
+# 기본 멀티스케일 (20%/30%/50%/100%)
+result = multiscale_inference(image)
+
+# 커스텀 스케일 + 앙상블 방식
+result = multiscale_inference(
+    image,
+    scales=[0.3, 0.5, 1.0],
+    ensemble_method="max_confidence",  # 또는 "weighted_average"
+)
+
+print(result["line"])           # "Line_A_1"
+print(result["confidence"])     # 0.92
+print(result["ensembled"])      # True (scales > 1)
+print(result["inference_time_ms"])  # 1200.0
+
+# 스케일별 개별 결과
+for sr in result["scale_results"]:
+    print(f"  scale={sr['scale']}: {sr['line']} conf={sr['confidence']:.3f}")
+```
+
+**반환 필드:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `line` | string | 앙상블 최종 라인명 |
+| `section` | string | 구역 (현재 MVP: `"0"`) |
+| `confidence` | float | 앙상블 신뢰도 0.0 ~ 1.0 |
+| `ensembled` | bool | 멀티스케일 앙상블 여부 (scales > 1이면 True) |
+| `scale_results` | list | 스케일별 개별 결과 (`scale`, `line`, `confidence`) |
+| `inference_time_ms` | float | 전체 추론 소요 시간 (ms) |
+
 ---
 
 ## 4. UI 사용법

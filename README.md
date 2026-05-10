@@ -24,7 +24,7 @@
 ### 하이브리드 식별 엔진
 - **Coarse Matching** — CNN으로 후보 라인군을 1차 압축
 - **Fine Matching** — 붉은 기둥 배치 기하학으로 라인명·좌표 확정
-- **Scale-Invariant 분석** — 크기 변화에 무관한 Keypoint 추출·대조
+- **Scale-Invariant 분석** — 멀티스케일 TTA 앙상블 (20%/30%/50%/100% 동시 추론, 가중 평균)
 
 ### 이미지 전처리
 - **Color Segmentation** — 푸른 선(구조)·붉은 선/글자(표식) 레이어 분리
@@ -107,7 +107,7 @@ streamlit run src/ui/app.py
 |-------|------|------|
 | Phase 1 | ✅ 완료 | Task 1-1 환경설정 ✅ · 1-2 색상분리 ✅ · 1-3 앵커탐지 ✅ · 1-4 패턴매칭 ✅ |
 | Phase 2 | ✅ 완료 | Task 2-1 Coarse Matcher ✅ · 2-2 Fine Matcher ✅ · 2-3 OCR ✅ · 2-4 API ✅ |
-| Phase 3 | ⬜ 예정 | 스케일 대응 테스트 + 모바일 캡처 환경 최적화 |
+| Phase 3 | 진행 중 | Task 3-1 멀티스케일 TTA ✅ · 3-2 배치 처리 ⬜ · 3-3 UI ⬜ |
 
 ---
 
