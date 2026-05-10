@@ -394,7 +394,7 @@ Response:
 | Task 2-4 FastAPI 엔드포인트 | ✅ 완료 |
 | Task 3-1 스케일 불변성 | ✅ 완료 |
 | Task 3-2 데이터 증강 | ✅ 완료 |
-| Task 3-3 Streamlit UI | ⬜ 대기 |
+| Task 3-3 Streamlit UI | ✅ 완료 |
 
 ---
 
