@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 from itertools import combinations
+from typing import Union
 
 import numpy as np
 
@@ -37,12 +38,16 @@ except ImportError:  # pragma: no cover  # scipy 미설치 환경 폴백
 _MIN_ANCHORS: int = 2          # 매칭에 필요한 최소 앵커 수
 _NORM_EPS: float = 1e-6        # 정규화 분모 보호 임계값
 _MAX_SUBSET_SIZE: int = 8      # 부분집합 조합 탐색 최대 레퍼런스 크기
+_COVERAGE_WEIGHT: float = 0.5  # 누락 앵커 패널티 가중치 (coverage 기여 비율)
+
+
+_MatchResult = dict[str, Union[str, float, None]]
 
 
 def match_pattern(
     query_anchors: list[tuple[int, int]],
     reference_db: dict[str, dict[str, list[tuple[int, int]]]],
-) -> dict[str, object]:
+) -> _MatchResult:
     """쿼리 앵커 좌표와 레퍼런스 DB를 매칭하여 라인명·구역명·신뢰도를 반환한다.
 
     Args:
@@ -58,7 +63,7 @@ def match_pattern(
         return {"line": None, "section": None, "confidence": 0.0}
 
     query_arr = np.array(query_anchors, dtype=float)
-    best: dict[str, object] = {"line": None, "section": None, "confidence": 0.0}
+    best: _MatchResult = {"line": None, "section": None, "confidence": 0.0}
 
     for line_name, sections in reference_db.items():
         for section_name, ref_anchors in sections.items():
@@ -68,7 +73,7 @@ def match_pattern(
             ref_arr = np.array(ref_anchors, dtype=float)
             confidence = _score_match(query_arr, ref_arr)
 
-            if confidence > float(best["confidence"]):
+            if confidence > float(best["confidence"]):  # type: ignore[arg-type]
                 best = {
                     "line": line_name,
                     "section": section_name,
@@ -156,7 +161,7 @@ def _score_match(query_arr: np.ndarray, ref_arr: np.ndarray) -> float:
         coverage = m / n
         shape_score = max(0.0, 1.0 - best_dist)
         # 누락된 앵커만큼 신뢰도를 낮추되 coverage로 조정
-        return shape_score * (0.5 + 0.5 * coverage)
+        return shape_score * (_COVERAGE_WEIGHT + _COVERAGE_WEIGHT * coverage)
 
     # m > n: 쿼리가 더 많음 (드문 케이스) — ref 기준 nearest-neighbor
     ref_norm = _normalize_anchors(ref_arr)
