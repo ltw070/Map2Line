@@ -107,7 +107,7 @@ streamlit run src/ui/app.py
 |-------|------|------|
 | Phase 1 | ✅ 완료 | Task 1-1 환경설정 ✅ · 1-2 색상분리 ✅ · 1-3 앵커탐지 ✅ · 1-4 패턴매칭 ✅ |
 | Phase 2 | ✅ 완료 | Task 2-1 Coarse Matcher ✅ · 2-2 Fine Matcher ✅ · 2-3 OCR ✅ · 2-4 API ✅ |
-| Phase 3 | 진행 중 | Task 3-1 멀티스케일 TTA ✅ · 3-2 배치 처리 ⬜ · 3-3 UI ⬜ |
+| Phase 3 | 진행 중 | Task 3-1 멀티스케일 TTA ✅ · 3-2 데이터 증강 ✅ · 3-3 UI ⬜ |
 
 ---
 

@@ -8,8 +8,8 @@
 
 | 항목 | 내용 |
 |------|------|
-| **현재 Phase** | Phase 3 진행 중 — Task 3-1 ✅ 완료 |
-| **다음 작업** | Phase 3 Task 3-2 (배치 처리 최적화) |
+| **현재 Phase** | Phase 3 진행 중 — Task 3-2 ✅ 완료 |
+| **다음 작업** | Phase 3 Task 3-3 (Streamlit UI) |
 | **블로커** | 없음 |
 | **마지막 업데이트** | 2026-05-10 |
 
@@ -19,7 +19,7 @@
 |-------|------|--------|-----------|
 | Phase 1 | ✅ 완료 | 4/4 | Task 1-1~1-4 모두 완료. pytest 31 PASS, 2 skipped. |
 | Phase 2 | ✅ 완료 | 4/4 | Task 2-1 Coarse ✅ / Task 2-2 Fine ✅ / Task 2-3 OCR ✅ / Task 2-4 API ✅ |
-| Phase 3 | 진행 중 | 1/3 | Task 3-1 ✅ 스케일 불변성 / Task 3-2 ⬜ 배치 처리 / Task 3-3 ⬜ UI |
+| Phase 3 | 진행 중 | 2/3 | Task 3-1 ✅ 스케일 불변성 / Task 3-2 ✅ 데이터 증강 / Task 3-3 ⬜ UI |
 
 ---
 
@@ -33,6 +33,57 @@ mypy 2.0은 `python_version = 3.9` 미지원 (3.10+ 필요). `setup.cfg`를 `3.1
 ---
 
 ## 진행 이력
+
+---
+
+### 2026-05-10 — Task 3-2 데이터 증강 파이프라인 구현 완료
+
+- **변경 내용:**
+  - `tests/test_data_augmentation.py` 신규 생성 — 19개 테스트 (Red 단계)
+    - TestAugmentImage (10개): crop/resize/noise/blur 기법별 단일 이미지 검증
+      - crop: 크기 감소, crop_ratio 적용 검증
+      - resize: 지정 크기 달성
+      - noise: dtype uint8 유지, 형태 보존, 랜덤 변화
+      - blur: uint8 반환, 이미지 변경 검증
+      - 공통: 유효하지 않은 타입 ValueError, 다양한 크기 지원, 채널 3 유지
+    - TestAugmentDataset (6개): 배치 처리 함수 검증
+      - 파일 생성, 메타데이터 보존, 빈 디렉토리 처리
+      - 다중 기법 적용, 비존재 디렉토리 에러, 출력 디렉토리 자동 생성
+    - TestAugmentIntegration (3개): 통합 테스트
+      - 증강 이미지 유효성, 랜덤성 검증, 시드 선택사항
+  - `src/preprocessing/data_augmentation.py` 신규 생성 (Green + Refactor)
+    - `augment_image()`: 단일 이미지 증강 메인 함수
+      - 파라미터: augmentation_type (crop/resize/noise/blur), 기법별 옵션
+      - 검증: augmentation_type 유효성, 반환 dtype uint8
+      - 에러 처리: ValueError (유효하지 않은 타입)
+    - 헬퍼 함수 4개 분리:
+      - `_augment_crop()`: 중심 기준 랜덤 크롭, crop_ratio 적용
+      - `_augment_resize()`: cv2.resize 호출, 목표 크기 지정
+      - `_augment_noise()`: 가우시안 노이즈 추가, uint8 클리핑
+      - `_augment_blur()`: GaussianBlur, 홀수 커널 크기 보장
+    - `augment_dataset()`: 배치 처리 함수
+      - 입력: input_dir (경로 또는 Path), output_dir, augmentation_types 목록
+      - 검증: input_dir 존재 및 디렉토리 확인
+      - 처리: PNG/JPG/JPEG/BMP/TIFF 지원, 각 이미지별 각 기법 순회
+      - 파일명: `{stem}_{augtype}.png` 형식
+    - 상수 정의:
+      - `_AUGMENTATION_TYPES`: {"crop", "resize", "noise", "blur"}
+      - 기법별 기본값: 0.8, (64, 64), 10, 5
+
+- **근거:**
+  - PRD §5 데이터 증강 전략: 학습 데이터 다양성으로 현장 이미지 상황 시뮬레이션
+  - PLAN.md Task 3-2 TDD 체크리스트 구현
+  - 내부망 환경: scipy 미설치 → numpy/cv2만 사용하는 구현
+
+- **결과:**
+  - pytest: 19/19 PASS (test_data_augmentation.py)
+  - flake8: 0 violations (공백/라인길이 검증)
+  - mypy: 0 issues (타입 힌트 완성, 반환 경로 모두 커버)
+  - bandit: 0 issues (보안 검사)
+  - 전체 테스트: 120 passed, 2 skipped (FastAPI 미설치로 test_api.py 제외)
+  - data_augmentation.py 커버리지 100% (모든 함수/브랜치)
+
+- **다음 작업:** Phase 3 Task 3-3 Streamlit UI (`src/ui/app.py`)
 
 ---
 

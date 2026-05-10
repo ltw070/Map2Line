@@ -339,9 +339,11 @@ Response:
 ### Task 3-2. 데이터 증강 파이프라인
 
 **TDD 체크리스트:**
-- [ ] Red: 증강 결과 이미지 크기·형식 검증
-- [ ] Red: 증강 후 레이블 일치 검증
-- [ ] Green: 랜덤 크롭, 리사이즈, 노이즈, Blur 파이프라인
+- [x] Red: 증강 결과 이미지 크기·형식 검증 (19개 테스트)
+- [x] Red: 증강 후 레이블 일치 검증
+- [x] Green: 랜덤 크롭, 리사이즈, 노이즈, Blur 파이프라인
+- [x] Refactor: flake8/mypy/bandit 0 violations
+- [x] SubAgent3 ‖ SubAgent4 — pytest 19/19 PASS, 모든 린팅 도구 통과
 
 ### Task 3-3. Streamlit UI (`ui/app.py`)
 
@@ -390,7 +392,9 @@ Response:
 | Task 2-2 Fine Matcher | ✅ 완료 |
 | Task 2-3 OCR 교차검증 | ✅ 완료 |
 | Task 2-4 FastAPI 엔드포인트 | ✅ 완료 |
-| Phase 3 전체 | ⬜ 대기 |
+| Task 3-1 스케일 불변성 | ✅ 완료 |
+| Task 3-2 데이터 증강 | ✅ 완료 |
+| Task 3-3 Streamlit UI | ⬜ 대기 |
 
 ---
 
