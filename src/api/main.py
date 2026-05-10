@@ -9,7 +9,6 @@ Coarse → Fine → OCR 전체 파이프라인을 통합한다.
 """
 from __future__ import annotations
 
-import io
 import time
 from typing import Any, Dict
 
