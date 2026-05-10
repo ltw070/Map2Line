@@ -1,10 +1,6 @@
 """Map2Line Streamlit UI — 도면 기반 라인 식별 시스템."""
-import io
 import time
-from typing import Optional
 
-import cv2
-import numpy as np
 import requests
 import streamlit as st
 from PIL import Image
