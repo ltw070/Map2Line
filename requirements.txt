@@ -6,3 +6,8 @@ pytest-cov
 flake8
 mypy
 bandit
+
+# Phase 2 (CNN 하이브리드 엔진)
+torch>=2.0.0
+torchvision>=0.15.0
+pillow>=10.0.0
