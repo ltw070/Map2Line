@@ -117,8 +117,8 @@ def _ocr_read_text(image: np.ndarray) -> str:
 
     try:
         if _reader is None:
-            import easyocr
-            _reader = easyocr.Reader(['en'], gpu=False, verbose=False)
+            import easyocr as _easyocr_lib
+            _reader = _easyocr_lib.Reader(['en'], gpu=False, verbose=False)
 
         # EasyOCR는 RGB 또는 BGR 모두 처리 가능; 결과는 [(bbox, text, conf), ...]
         results = _reader.readtext(image, detail=1)
