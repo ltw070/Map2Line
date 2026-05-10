@@ -56,7 +56,8 @@ pip install -r requirements.txt
 ## 2. 빠른 시작
 
 > Phase 1이 완료되어 패턴 매칭 코어 기능을 직접 사용할 수 있습니다.
-> API 서버(Phase 2)는 아직 구현 중입니다.
+> Phase 2-1 Coarse Matcher가 구현되어 CNN 기반 Top-K 후보 추출이 가능합니다.
+> API 서버(Phase 2-4)는 아직 구현 중입니다.
 
 ```bash
 # 가상환경 활성화
@@ -273,7 +274,7 @@ bandit -r src/ -ll
 }
 ```
 
-**Python에서 직접 사용 (Phase 1 완료):**
+**Python에서 직접 사용 — 패턴 매칭 (Phase 1 완료):**
 ```python
 from src.matching.pattern_matcher import match_pattern
 
@@ -286,6 +287,27 @@ query_anchors = [(120, 340), (250, 340), (380, 340)]
 result = match_pattern(query_anchors, ref_db)
 # {"line": "Line_A", "section": "section_102", "confidence": 1.0}
 ```
+
+**Python에서 직접 사용 — Coarse Matcher (Phase 2-1 완료):**
+```python
+import numpy as np
+from src.matching.coarse_matcher import coarse_matcher
+
+# 단일 이미지 (H, W, 3) BGR
+image = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
+result = coarse_matcher(image, top_k=5)
+# {
+#   "candidates": [{"line": "Line_A_1", "confidence": 0.023}, ...],
+#   "inference_time_ms": 142.3
+# }
+
+# 배치 처리 (N, H, W, 3)
+batch = np.random.randint(0, 256, (4, 224, 224, 3), dtype=np.uint8)
+results = coarse_matcher(batch, top_k=5)  # list[dict], 길이=4
+```
+
+> **주의:** Phase 2-1 MVP에서 라인명은 ImageNet 클래스 인덱스 기반 Mock 값입니다.
+> 실제 라인 분류는 Phase 2 fine-tuning 이후 정확해집니다.
 
 **새 도면 등록 절차 (Phase 1 완료 후):**
 ```bash

@@ -227,10 +227,11 @@ def match_pattern(
 ### Task 2-1. Coarse Matcher (`coarse_matcher.py`)
 
 **TDD 체크리스트:**
-- [ ] Red: mock 모델로 Top-5 후보 반환 형식 검증
-- [ ] Red: 배치 처리 성능 테스트
-- [ ] Green: ResNet-18 또는 EfficientNet-B0 추론 파이프라인
-- [ ] SubAgent3 ‖ SubAgent4
+- [x] Red: mock 모델로 Top-5 후보 반환 형식 검증
+- [x] Red: 배치 처리 성능 테스트
+- [x] Green: ResNet-18 pretrained 추론 파이프라인 (NumPy 폴백 포함)
+- [x] Refactor: assert 제거, _split_batch 분리, 타입 힌트 완성
+- [x] SubAgent3 ‖ SubAgent4 — pytest 20/20 PASS, flake8/mypy/bandit 0 issues
 
 ### Task 2-2. Fine Matcher (`fine_matcher.py`)
 
@@ -339,7 +340,8 @@ Response:
 | Task 1-2 색상 분리 | ✅ 완료 |
 | Task 1-3 앵커 탐지 | ✅ 완료 |
 | Task 1-4 패턴 매칭 | ✅ 완료 |
-| Phase 2 전체 | ⬜ 대기 |
+| Task 2-1 Coarse Matcher | ✅ 완료 |
+| Task 2-2 ~ 2-4 (Phase 2 나머지) | ⬜ 대기 |
 | Phase 3 전체 | ⬜ 대기 |
 
 ---

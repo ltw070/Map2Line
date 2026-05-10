@@ -8,8 +8,8 @@
 
 | 항목 | 내용 |
 |------|------|
-| **현재 Phase** | Phase 1 완료 (4/4) |
-| **다음 작업** | Task 2-1 Coarse Matcher (`src/matching/coarse_matcher.py`) |
+| **현재 Phase** | Phase 2 진행 중 (1/4) |
+| **다음 작업** | Task 2-2 Fine Matcher (`src/matching/fine_matcher.py`) |
 | **블로커** | 없음 |
 | **마지막 업데이트** | 2026-05-10 |
 
@@ -18,7 +18,7 @@
 | Phase | 상태 | 완료 조건 |
 |-------|------|-----------|
 | Phase 1 | 완료 | Task 1-1~1-4 모두 완료. 31 passed, 2 skipped. |
-| Phase 2 | 대기 중 | CNN 하이브리드 엔진 구축, 오분류율 1% 미만 |
+| Phase 2 | 진행 중 | CNN 하이브리드 엔진 구축, 오분류율 1% 미만 |
 | Phase 3 | 대기 중 | 30% 축소 이미지 식별 성공, 응답 1.5초 이내 |
 
 ---
@@ -33,6 +33,42 @@ mypy 2.0은 `python_version = 3.9` 미지원 (3.10+ 필요). `setup.cfg`를 `3.1
 ---
 
 ## 진행 이력
+
+---
+
+### 2026-05-10 — Task 2-1 Coarse Matcher 구현 완료
+
+- **변경 내용:**
+  - `requirements.txt`에 Phase 2 의존성 추가 — `torch>=2.0.0`, `torchvision>=0.15.0`, `pillow>=10.0.0`
+  - `tests/test_coarse_matcher.py` 생성 — 20개 테스트 (Red 단계)
+    - 반환 형식 (dict, candidates 키, inference_time_ms 키)
+    - Top-K 후보 개수 검증 (top_k=1/3/5)
+    - 후보 필드 검증 (line 문자열, confidence float 0.0~1.0)
+    - 신뢰도 내림차순 정렬 검증
+    - 배치 처리 (4D ndarray, list 입력)
+  - `src/matching/coarse_matcher.py` 생성 (Green + Refactor)
+    - ResNet-18 pretrained 기반 Top-K 추론
+    - 모델 싱글톤 패턴 (_MODEL, _TRANSFORM, _DEVICE 전역 캐시)
+    - 배치 처리 지원 (4D ndarray 및 list[ndarray])
+    - PyTorch 미설치 환경을 위한 NumPy 폴백 구현
+    - assert 제거 → TypeError 명시적 raise로 교체 (bandit B101 해결)
+    - `_split_batch()` 헬퍼 분리, 타입 힌트 완성
+
+- **근거:**
+  - PLAN.md Task 2-1 구현 대상 정의에 따름.
+  - 내부망 PyTorch 설치 불가 환경 대비: `try/except ImportError` + NumPy 폴백.
+  - ResNet-18 선택 이유: Phase 2-1 MVP로 가장 가볍고 pretrained 가용한 모델.
+    실제 라인 분류 정확도는 Phase 2-4 이후 fine-tuning으로 개선 예정.
+  - `_LINE_NAMES`를 전역 캐시로 생성: 1000 클래스 반복 생성 오버헤드 제거.
+
+- **결과:**
+  - pytest: 20/20 PASS (coarse_matcher 단독), 전체 51 passed, 2 skipped
+  - flake8: 0 violations
+  - mypy: 0 issues
+  - bandit: 0 issues (Low 1건 B101 assert_used → raise TypeError로 해결)
+  - 추론 시간: CPU 약 100~200ms (ResNet-18 pretrained, 224x224)
+
+- **다음 작업:** Task 2-2 Fine Matcher (`src/matching/fine_matcher.py`)
 
 ---
 
