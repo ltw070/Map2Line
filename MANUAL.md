@@ -57,6 +57,7 @@ pip install -r requirements.txt
 
 > Phase 1이 완료되어 패턴 매칭 코어 기능을 직접 사용할 수 있습니다.
 > Phase 2-1 Coarse Matcher가 구현되어 CNN 기반 Top-K 후보 추출이 가능합니다.
+> Phase 2-2 Fine Matcher가 구현되어 Coarse 후보에서 최종 라인 선택이 가능합니다.
 > API 서버(Phase 2-4)는 아직 구현 중입니다.
 
 ```bash
@@ -308,6 +309,33 @@ results = coarse_matcher(batch, top_k=5)  # list[dict], 길이=4
 
 > **주의:** Phase 2-1 MVP에서 라인명은 ImageNet 클래스 인덱스 기반 Mock 값입니다.
 > 실제 라인 분류는 Phase 2 fine-tuning 이후 정확해집니다.
+
+**Python에서 직접 사용 — Fine Matcher (Phase 2-2 완료):**
+```python
+import numpy as np
+from src.matching.fine_matcher import fine_matcher
+
+# Coarse Matcher 결과를 Fine Matcher에 입력
+coarse_candidates = [
+    {"line": "Line_A_1", "confidence": 0.95},
+    {"line": "Line_B_2", "confidence": 0.87},
+    {"line": "Line_C_3", "confidence": 0.78},
+    {"line": "Line_D_4", "confidence": 0.65},
+    {"line": "Line_E_5", "confidence": 0.52},
+]
+image = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
+
+# top_k=1: 최종 1개 선택
+result = fine_matcher(image, coarse_candidates, top_k=1)
+# {"line": "Line_A_1", "section": "0", "confidence": 0.94, "inference_time_ms": 0.5}
+
+# top_k=3: 상위 3개 반환 (confidence 내림차순)
+results = fine_matcher(image, coarse_candidates, top_k=3)
+# [{"line": "Line_A_1", ...}, {"line": "Line_B_2", ...}, {"line": "Line_C_3", ...}]
+```
+
+> **주의:** Phase 2-2 MVP에서 section 필드는 "0"(mock) 값입니다.
+> Phase 2-4 API 통합 이후 anchor_detector + pattern_matcher 결과로 교체됩니다.
 
 **새 도면 등록 절차 (Phase 1 완료 후):**
 ```bash

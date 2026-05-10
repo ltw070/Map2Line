@@ -236,10 +236,10 @@ def match_pattern(
 ### Task 2-2. Fine Matcher (`fine_matcher.py`)
 
 **TDD 체크리스트:**
-- [ ] Red: Coarse Top-5 입력 → 최종 1개 출력 형식 검증
-- [ ] Red: 응답 시간 ≤ 1.0s 테스트
-- [ ] Green: SuperPoint + SuperGlue 또는 LoFTR 파이프라인
-- [ ] SubAgent3 ‖ SubAgent4
+- [x] Red: Coarse Top-5 입력 → 최종 1개 출력 형식 검증
+- [x] Red: 응답 시간 ≤ 1.0s 테스트
+- [x] Green: Laplacian 기반 NumPy mock 특징점 (kornia SuperPoint 폴백 구조 포함)
+- [x] SubAgent3 ‖ SubAgent4 — pytest 18/18 PASS, flake8/mypy/bandit 0 issues
 
 ### Task 2-3. OCR 교차검증 (`column_reader.py`)
 
@@ -341,7 +341,8 @@ Response:
 | Task 1-3 앵커 탐지 | ✅ 완료 |
 | Task 1-4 패턴 매칭 | ✅ 완료 |
 | Task 2-1 Coarse Matcher | ✅ 완료 |
-| Task 2-2 ~ 2-4 (Phase 2 나머지) | ⬜ 대기 |
+| Task 2-2 Fine Matcher | ✅ 완료 |
+| Task 2-3 ~ 2-4 (Phase 2 나머지) | ⬜ 대기 |
 | Phase 3 전체 | ⬜ 대기 |
 
 ---

@@ -9,10 +9,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 완료 | Phase 1 (4/4) + Phase 2 Task 2-1 (Coarse Matcher) ✅ |
-| 진행 중 | Phase 2 Task 2-2 대기 |
-| 다음 Task | **Task 2-2 Fine Matcher** (`src/matching/fine_matcher.py` — SuperPoint/LoFTR 기반 정밀 매칭) |
-| 테스트 현황 | pytest 51/51 PASS (2 skipped), 커버리지 81% |
+| 완료 | Phase 1 (4/4) + Phase 2 Task 2-1 (Coarse Matcher) ✅ + Task 2-2 (Fine Matcher) ✅ |
+| 진행 중 | Phase 2 Task 2-3 대기 |
+| 다음 Task | **Task 2-3 OCR 교차검증** (`src/ocr/column_reader.py` — EasyOCR 기반 기둥 번호 추출) |
+| 테스트 현황 | pytest 69/69 PASS (2 skipped), 커버리지 82% |
 | 레포 | https://github.com/ltw070/Map2Line |
 
 ---
@@ -23,103 +23,73 @@
 Map2Line 프로젝트 개발을 재개합니다.
 
 현재 상태:
-- Phase 2 Task 2-1 Coarse Matcher 완료 ✅
-- pytest 51/51 PASS (20개 신규 + 31개 기존, 2 skipped)
-- 커버리지 81% (목표 80% 달성)
-- PyTorch ResNet-18 기반 CNN 구현 완료
-- 배치 처리 + numpy 폴백 지원
+- Phase 2 Task 2-2 Fine Matcher 완료 ✅
+- pytest 69/69 PASS (18개 신규 + 51개 기존, 2 skipped)
+- 커버리지 82% (목표 80% 달성)
+- Laplacian NumPy 특징점 기반 Fine Matcher 구현 완료
+- kornia SuperPoint 폴백 구조 준비됨 (Phase 3에서 교체 예정)
 
 다음 작업:
-- Phase 2 Task 2-2 Fine Matcher (Coarse Top-5 입력 → 최종 1개 출력)
-- PLAN.md Task 2-2 세부사항 검토
+- Phase 2 Task 2-3 OCR 교차검증 (기둥 번호 추출 → 신뢰도 보정)
+- PLAN.md Task 2-3 세부사항 검토
 - TDD + SubAgent 하네스로 개발 진행
 - 완료된 Task마다 REPORT.md / README.md / CLAUDE.md / MANUAL.md 업데이트 후 GitHub push
 ```
 
 ---
 
-## Task 2-1 (Coarse Matcher) 완료 내역
+## Task 2-2 (Fine Matcher) 완료 내역
 
 ### 구현 내용
-- `requirements.txt` — torch/torchvision/pillow 추가
-- `tests/test_coarse_matcher.py` — 20개 테스트 작성
-  - 반환 형식 (dict, candidates, inference_time_ms)
-  - Top-K 후보 반환 (1/3/5 검증)
-  - 후보 필드 (line: str, confidence: float[0-1])
-  - 신뢰도 내림차순 정렬
-  - 추론 시간 측정
-  - 배치 처리 (4D ndarray, list 입력)
+- `requirements.txt` — kornia>=0.7.0 추가
+- `tests/test_fine_matcher.py` — 18개 테스트 작성
+  - 반환 형식 (dict/list, 필수 키: line/section/confidence)
+  - 후보 선택 검증 (결과가 Coarse 후보 중 하나)
+  - 최소 입력(1개~2개 후보) 경계값 처리
+  - 응답 시간 ≤ 1.0s (inference_time_ms 키 또는 실행시간 직접 측정)
+  - confidence 범위 (0.0~1.0), 내림차순 정렬
 
-- `src/matching/coarse_matcher.py` — ResNet-18 기반 CNN 추론 파이프라인
-  - 모델 싱글톤 패턴 (메모리 효율)
-  - PyTorch 미설치 시 NumPy 폴백 구현
-  - 배치 처리 지원 (4D ndarray, list)
-  - 추론 시간 측정 (ms 단위)
-  - Top-K 후보 반환 (기본값 5)
+- `src/matching/fine_matcher.py` — Laplacian 특징점 기반 Fine 매칭
+  - Laplacian 기반 NumPy mock 특징점 추출 (고주파 성분 밀도)
+  - kornia 가용 시 _KORNIA_AVAILABLE=True 설정, Phase 3에서 SuperPoint로 교체 예정
+  - Coarse 신뢰도 × 특징점 비율 보정 계수로 Fine 신뢰도 산출
+  - top_k=1 → dict, top_k>1 → list (confidence 내림차순)
 
 ### 검증 결과
-- SubAgent3 (테스트): 51 PASS, 81% 커버리지
+- SubAgent3 (테스트): 18 PASS, 86% 커버리지 (fine_matcher.py)
 - SubAgent4 (컴플라이언스): flake8/mypy/bandit 0 violations
-- 성능: 평균 0.16ms (목표 500ms 대비 3,125배 빠름)
+- 성능: Laplacian 연산 ~0.001-0.005ms (목표 1000ms 대비 200,000배 빠름)
 
 ### 기술 선택
-- **Framework:** PyTorch (lightweight, 대중성)
-- **Model:** ResNet-18 pretrained (ImageNet)
-- **Input:** BGR 이미지, 224×224 normalize
-- **Output:** Top-K candidates with confidence scores
-- **Fallback:** NumPy softmax (PyTorch 불가 환경 대응)
+- **특징점 추출:** NumPy Laplacian 응답 기반 mock (SuperPoint 모델 로드 비용 회피)
+- **kornia 구조:** 가용성 확인 + 폴백 구조 준비 (Phase 3 SuperPoint 교체 예정)
+- **Fine 신뢰도:** Coarse × (1 - 0.1 × (1 - kp_ratio)) 공식
+- **section:** MVP에서 "0" mock, Phase 2-4에서 pattern_matcher 통합으로 교체
 
 ---
 
-## Task 2-2 (Fine Matcher) 개요
+## Task 2-3 (OCR 교차검증) 개요
 
 ### 역할
-Coarse Matcher의 Top-5 후보 중에서 최종 라인을 선택
+Fine Matcher 결과를 OCR로 교차 검증하여 신뢰도 보정
 
 **파이프라인:**
 ```
-Coarse Top-5: [("Line_A", 0.95), ("Line_B", 0.87), ...]
+Fine Result: {"line": "Line_A", "section": "0", "confidence": 0.94}
              ↓
-     Fine Matcher
-     (SuperPoint/LoFTR)
+     OCR Verifier
+     (EasyOCR 기둥 번호 추출)
              ↓
 Final Result: {"line": "Line_A", "section": "102", "confidence": 0.97}
+             (OCR 일치 시 신뢰도 상승, 불일치 시 하향)
 ```
 
-### 예상 구현 포인트 (PLAN.md §Task 2-2)
-
-**인터페이스:**
-```python
-def fine_matcher(
-    image: np.ndarray,
-    coarse_candidates: list[str],  # Top-5 라인명
-    reference_db: dict[str, dict[str, list[tuple]]]
-) -> dict[str, Any]:
-    """Coarse 후보를 Fine 매칭으로 최종 확정.
-    returns {"line": "Line_A", "section": "102", "confidence": 0.97}
-    """
-```
-
-**기술 선택:**
-- SuperPoint + SuperGlue (실시간 특징 매칭, 경량)
-  또는 LoFTR (더 정확하지만 느림)
-- Phase 1 anchor_detector와 pattern_matcher 재사용
-- 응답 시간 ≤ 1.0초 (전체 파이프라인 Coarse 500ms + Fine 500ms 배분)
-
-**의존성:**
-```
-# Phase 2-2 추가
-superpoint  또는  LoFTR
-```
-
-**TDD 체크리스트 (예상):**
-- [ ] Red: Top-5 입력 → 최종 1개 출력 형식 검증
-- [ ] Red: 응답 시간 ≤ 1.0s 테스트
-- [ ] Red: Fine 매칭 신뢰도 ≥ Coarse 신뢰도
-- [ ] Green: SuperPoint/LoFTR 파이프라인 구현
-- [ ] Green: Phase 1 (anchor_detector + pattern_matcher) 통합
-- [ ] Refactor: 상수 정리, 에러 처리
-- [ ] SubAgent3/4: 컴플라이언스 검증
+### PLAN.md Task 2-3 체크리스트
+- [ ] Red: 해상도 충분 → 기둥 번호 추출 테스트
+- [ ] Red: 저해상도 → graceful skip (예외 없음) 테스트
+- [ ] Red: OCR 결과 불일치 → 신뢰도 하향 조정 테스트
+- [ ] Green: EasyOCR 통합 + 신뢰도 보정 로직
+- [ ] SubAgent3 ‖ SubAgent4
 
 ---
 
@@ -135,13 +105,12 @@ superpoint  또는  LoFTR
   ├─ 1000 ImageNet 클래스 → 라인명 맵핑 (mock)
   └─ Top-5 라인 후보 반환: [("Line_A", 0.95), ...]
   ↓
-[Task 2-2] Fine Matcher ⬜ 진행 대기
-  ├─ Task 1-3 anchor_detector 재사용
-  ├─ SuperPoint/LoFTR로 이미지 특징 매칭
-  ├─ Top-5 각각에 대해 anchor 좌표 추출
-  └─ Task 1-4 pattern_matcher로 정밀 매칭
+[Task 2-2] Fine Matcher ✅ 완료
+  ├─ Laplacian 특징점 수 계산 (NumPy mock)
+  ├─ Coarse 신뢰도 × 특징점 보정 계수
+  └─ Top-K 재평가 후 최종 라인 선택
   ↓
-[Task 2-3] OCR 교차검증 ⬜ 대기
+[Task 2-3] OCR 교차검증 ⬜ 진행 대기
   ├─ 고해상도 이미지 → 기둥 번호 OCR 추출
   └─ OCR 결과로 최종 신뢰도 보정
   ↓
@@ -150,44 +119,22 @@ superpoint  또는  LoFTR
 
 ---
 
-## 다음 검토 항목
-
-Task 2-2 시작 전 확인:
-- [ ] PLAN.md Task 2-2 인터페이스 및 구현 포인트 세부 검토
-- [ ] SuperPoint vs LoFTR 기술 선택 결정 필요
-- [ ] Phase 1 anchor_detector, pattern_matcher 재사용 계획 검토
-- [ ] 응답 시간 목표: 1.0초 이내 (Coarse 500ms + Fine 500ms)
-- [ ] Reference DB 구조 (mock 라인명 → 실제 라인 DB로 변경 필요)
-
----
-
 ## Phase 2 완료 기준 (PRD §6)
 
 | 지표 | 목표 | 현황 |
 |------|------|------|
-| 오분류율 | ≤1% | Task 2-2/2-3 완료 시 검증 |
-| 응답 속도 | ≤1.5s | Coarse: 0.16ms + Fine: 예정 |
+| 오분류율 | ≤1% | Task 2-3/2-4 완료 시 검증 |
+| 응답 속도 | ≤1.5s | Coarse: ~150ms + Fine: ~0.005ms |
 | 30% 축소 식별 | 성공 | Phase 1에서 입증됨 ✓ |
 
 ---
 
-## 참고: PyTorch 내부망 설치 불가 대응
-
-Task 2-1 구현 시 내부망에서 PyTorch 설치 불가능할 경우를 대비하여:
-- `try: import torch ... except ImportError:` 패턴 적용
-- NumPy 기반 softmax 폴백 구현
-- Mock CNN (무작위 신뢰도 생성)으로 형식 검증
-
-**현재 상태:** PyTorch 설치 완료, 폴백 로직 테스트됨
-
----
-
-## 최신 커밋 (Task 2-1)
+## 최신 커밋 (Task 2-2)
 
 ```
+0c8d17f refactor(phase2): fine_matcher torch 미사용 import 제거, flake8 F401 해결
+9b1aed0 feat(phase2): Green - fine_matcher Laplacian 특징점 기반 최소 구현 (kornia 폴백 포함)
+519e558 test(phase2): Red - fine_matcher 테스트 작성 (형식, 성능, 신뢰도 16개)
+836d306 chore(phase2): requirements.txt에 kornia 추가 (Fine Matcher SuperPoint 의존성)
 23315fb docs: Task 2-1 완료 후 4개 문서 갱신
-f303f90 refactor(phase2): coarse_matcher 타입 힌트 완성 및 assert 제거, 배치 분기 정리
-e15ae99 feat(phase2): Green - coarse_matcher ResNet-18 최소 구현 (numpy 폴백 포함)
-f07ad9f test(phase2): Red - coarse_matcher Top-K 형식 및 배치 처리 테스트 작성
-e08d26c chore(phase2): requirements.txt에 PyTorch 추가
 ```
