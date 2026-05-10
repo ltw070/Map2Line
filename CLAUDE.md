@@ -127,6 +127,12 @@ SubAgent1 → SubAgent2 → SubAgent3 ┐ (병렬)
 - 하드코딩된 토큰·패스워드 금지
 - PRD에 없는 기능 선제 구현 금지 (YAGNI)
 
+### 의존성 설치 불가 환경 대응
+- 이 PC는 pip으로 `scipy`를 설치할 수 없는 내부망 환경입니다.
+- scipy가 필요한 모듈은 `try: import scipy ... except ImportError:` 패턴으로
+  numpy 폴백을 반드시 제공해야 합니다.
+- requirements.txt에는 scipy를 유지합니다 (외부망 배포 환경 대응).
+
 ---
 
 ## 주요 파일 위치

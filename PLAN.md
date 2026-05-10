@@ -186,19 +186,22 @@ SubAgent1 → SubAgent2 → (SubAgent3 ‖ SubAgent4)
 ```python
 def match_pattern(
     query_anchors: list[tuple[int, int]],
-    reference_db: dict[str, list[tuple[int, int]]],
-) -> dict[str, object]:
-    """쿼리 앵커 좌표와 레퍼런스 DB를 매칭하여 라인명·신뢰도를 반환한다."""
-    # returns {"line": "A", "section": "102", "confidence": 0.97}
+    reference_db: dict[str, dict[str, list[tuple[int, int]]]],
+) -> dict[str, str | float | None]:
+    """쿼리 앵커 좌표와 레퍼런스 DB를 매칭하여 라인명·구역명·신뢰도를 반환한다.
+
+    reference_db 형식: {"라인명": {"구역명": [(x, y), ...], ...}, ...}
+    returns {"line": "Line_A", "section": "section_102", "confidence": 0.97}
+    """
 ```
 
 **TDD 체크리스트:**
-- [ ] Red: 동일 패턴 → 신뢰도 1.0 테스트
-- [ ] Red: 스케일 50% 축소 패턴 → 동일 라인 식별 테스트 (스케일 불변성)
-- [ ] Red: 유사 패턴 2개 중 정답 라인 선택 테스트 (오분류율)
-- [ ] Red: 앵커 1개 누락 시에도 매칭 성공 테스트 (robustness)
-- [ ] Green: 무게중심 정규화 → 거리 비율 행렬 → KD-tree 매칭 구현
-- [ ] Refactor: DB 로드·저장 분리
+- [x] Red: 동일 패턴 → 신뢰도 1.0 테스트
+- [x] Red: 스케일 50% 축소 패턴 → 동일 라인 식별 테스트 (스케일 불변성)
+- [x] Red: 유사 패턴 2개 중 정답 라인 선택 테스트 (오분류율)
+- [x] Red: 앵커 1개 누락 시에도 매칭 성공 테스트 (robustness)
+- [x] Green: 무게중심 정규화 → ref 부분집합 탐색 → coverage 가중 신뢰도 구현
+- [x] Refactor: _COVERAGE_WEIGHT 상수 추출, _MatchResult 타입 별칭 도입
 - [ ] SubAgent3: 오분류율 ≤ 1%, 처리 시간 ≤ 500ms
 - [ ] SubAgent4: 0 violations
 
@@ -335,7 +338,7 @@ Response:
 | Task 1-1 환경 설정 | ✅ 완료 |
 | Task 1-2 색상 분리 | ✅ 완료 |
 | Task 1-3 앵커 탐지 | ✅ 완료 |
-| Task 1-4 패턴 매칭 | ⬜ 대기 |
+| Task 1-4 패턴 매칭 | ✅ 완료 |
 | Phase 2 전체 | ⬜ 대기 |
 | Phase 3 전체 | ⬜ 대기 |
 

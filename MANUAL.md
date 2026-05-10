@@ -55,7 +55,8 @@ pip install -r requirements.txt
 
 ## 2. 빠른 시작
 
-> Phase 1 완료 후 사용 가능합니다. (현재 Phase 0 완료 상태)
+> Phase 1이 완료되어 패턴 매칭 코어 기능을 직접 사용할 수 있습니다.
+> API 서버(Phase 2)는 아직 구현 중입니다.
 
 ```bash
 # 가상환경 활성화
@@ -259,7 +260,7 @@ bandit -r src/ -ll
 
 > Phase 1 구현 후 실제 형식이 확정됩니다. 현재는 설계 단계입니다.
 
-**예상 구조 (`data/reference_db.json`):**
+**확정 구조 (`data/reference_db.json`):**
 ```json
 {
   "Line_A": {
@@ -270,6 +271,20 @@ bandit -r src/ -ll
     "section_201": [[115, 335], [248, 335], [375, 335]]
   }
 }
+```
+
+**Python에서 직접 사용 (Phase 1 완료):**
+```python
+from src.matching.pattern_matcher import match_pattern
+
+ref_db = {
+    "Line_A": {
+        "section_102": [(120, 340), (250, 340), (380, 340)],
+    }
+}
+query_anchors = [(120, 340), (250, 340), (380, 340)]
+result = match_pattern(query_anchors, ref_db)
+# {"line": "Line_A", "section": "section_102", "confidence": 1.0}
 ```
 
 **새 도면 등록 절차 (Phase 1 완료 후):**

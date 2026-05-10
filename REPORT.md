@@ -8,16 +8,16 @@
 
 | 항목 | 내용 |
 |------|------|
-| **현재 Phase** | Phase 1 — Task 1-3 완료 (3/4) |
-| **다음 작업** | Task 1-4 기하 패턴 매칭 (`src/matching/pattern_matcher.py`) |
+| **현재 Phase** | Phase 1 완료 (4/4) |
+| **다음 작업** | Task 2-1 Coarse Matcher (`src/matching/coarse_matcher.py`) |
 | **블로커** | 없음 |
-| **마지막 업데이트** | 2026-05-08 |
+| **마지막 업데이트** | 2026-05-10 |
 
 ### Phase 진행 현황
 
 | Phase | 상태 | 완료 조건 |
 |-------|------|-----------|
-| Phase 1 | 🔄 진행 중 | Task 1-4 패턴 매칭 구현 + 테스트 PASS 시 완료 |
+| Phase 1 | 완료 | Task 1-1~1-4 모두 완료. 31 passed, 2 skipped. |
 | Phase 2 | 대기 중 | CNN 하이브리드 엔진 구축, 오분류율 1% 미만 |
 | Phase 3 | 대기 중 | 30% 축소 이미지 식별 성공, 응답 1.5초 이내 |
 
@@ -33,6 +33,36 @@ mypy 2.0은 `python_version = 3.9` 미지원 (3.10+ 필요). `setup.cfg`를 `3.1
 ---
 
 ## 진행 이력
+
+---
+
+### 2026-05-10 — Task 1-4 기하 패턴 매칭 모듈 완료
+
+- **변경 내용:**
+  - `requirements.txt`에 `scipy` 추가
+  - `tests/test_pattern_matcher.py` 생성 — 5개 테스트 (Red 단계)
+    - 동일 패턴 신뢰도 1.0, 스케일 50% 축소 불변성 (≥0.95)
+    - 유사 패턴 2개 중 정답 선택, 앵커 1개 누락 시 robustness (0.8~1.0)
+    - 쿼리 앵커 2개 미만 → None 반환 (경계값)
+  - `src/matching/pattern_matcher.py` 생성 (Green 단계)
+    - `match_pattern()`: 무게중심 정규화 + 최대거리 스케일 불변화
+    - `_score_match()`: 동일 크기 직접 비교, 누락 앵커 시 ref 부분집합 탐색
+    - `_COVERAGE_WEIGHT` 상수 추출, `_MatchResult` 타입 별칭 도입 (Refactor)
+    - scipy optional: 미설치 환경에서 numpy 브로드캐스팅 폴백 자동 사용
+
+- **근거:**
+  - PRD §3.2 앵커 기반 Fine Matching, PLAN.md Task 1-4 구현 대상 정의에 따름.
+  - scipy pip 설치 불가 환경이므로 numpy only 폴백 구현 병행.
+  - 쿼리 앵커 수 < 레퍼런스 수인 경우(누락 앵커) ref 부분집합 탐색으로 해결:
+    - coverage = m/n 가중치로 신뢰도에 누락 패널티 반영
+    - `_COVERAGE_WEIGHT=0.5`: 2/3 앵커 → shape_score * 0.833 → 0.8 이상 보장
+
+- **결과:**
+  - pytest 31/31 PASS, 2 skipped (전체 테스트)
+  - flake8 0 violations, mypy 0 issues, bandit No issues
+  - pattern_matcher.py 커버리지 86% (scipy fallback/m>n 브랜치 미실행)
+
+- **다음 작업:** Task 2-1 Coarse Matcher (`src/matching/coarse_matcher.py`)
 
 ---
 
