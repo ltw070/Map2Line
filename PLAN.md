@@ -243,11 +243,56 @@ def match_pattern(
 
 ### Task 2-3. OCR 교차검증 (`column_reader.py`)
 
+**인터페이스:**
+```python
+def verify_with_ocr(
+    query_image: np.ndarray,
+    fine_result: dict[str, Any],
+) -> dict[str, Any]:
+    """Fine Matcher 결과를 EasyOCR로 교차검증하여 신뢰도를 보정한다.
+
+    Args:
+        query_image: BGR 이미지, shape (H, W, 3), dtype uint8.
+        fine_result: Fine Matcher 출력 딕셔너리.
+            필수 키: "line" (str), "section" (str), "confidence" (float),
+                     "inference_time_ms" (float)
+
+    Returns:
+        보정된 결과 딕셔너리:
+        {
+            "line": str,
+            "section": str,       # OCR 추출 기둥 번호 (추출 성공 시) 또는 원본 유지
+            "confidence": float,  # 보정된 신뢰도 (0.0~1.0 클리핑)
+            "inference_time_ms": float,
+            "ocr_text": str,      # OCR 추출 원본 텍스트 (없으면 "")
+        }
+
+    신뢰도 보정 규칙:
+        - 해상도 충분 (이미지 너비 >= MIN_WIDTH_PX) 이고 OCR 성공:
+            - line 포함 텍스트 추출 → +0.05 (OCR_MATCH_BOOST)
+            - line 미포함 텍스트 추출 → -0.10 (OCR_MISMATCH_PENALTY)
+        - 저해상도 (이미지 너비 < MIN_WIDTH_PX) 또는 OCR 실패:
+            - 신뢰도 현상 유지 (패널티/부스트 없음)
+
+    Constants:
+        MIN_WIDTH_PX    = 400   # 저해상도 판별 기준
+        OCR_MATCH_BOOST = 0.05  # OCR 일치 시 신뢰도 상승
+        OCR_MISMATCH_PENALTY = 0.10  # OCR 불일치 시 신뢰도 하향
+    """
+```
+
+**핵심 구현 포인트:**
+- EasyOCR: `try: import easyocr ... except ImportError:` 패턴으로 설치 여부 확인
+- 미설치 환경에서는 OCR skip (저해상도와 동일 처리) → graceful degrade
+- 기둥 번호 정규식: `r'\b\d{3}\b'` (3자리 숫자)
+- EasyOCR reader는 모듈 레벨 lazy init (최초 호출 시 1회 초기화)
+
 **TDD 체크리스트:**
 - [ ] Red: 해상도 충분 → 기둥 번호 추출 테스트
 - [ ] Red: 저해상도 → graceful skip (예외 없음) 테스트
 - [ ] Red: OCR 결과 불일치 → 신뢰도 하향 조정 테스트
 - [ ] Green: EasyOCR 통합 + 신뢰도 보정 로직
+- [ ] Refactor: 상수 정리, 타입 힌트 완성
 - [ ] SubAgent3 ‖ SubAgent4
 
 ### Task 2-4. FastAPI 엔드포인트 (`api/main.py`)

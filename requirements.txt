@@ -14,3 +14,6 @@ pillow>=10.0.0
 
 # Phase 2-2 (Fine Matcher — SuperPoint 특징점 매칭)
 kornia>=0.7.0
+
+# Phase 2-3 (OCR 교차검증 — 기둥 번호 추출)
+easyocr>=1.7.0
