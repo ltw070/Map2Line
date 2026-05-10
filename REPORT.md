@@ -8,18 +8,18 @@
 
 | 항목 | 내용 |
 |------|------|
-| **현재 Phase** | Phase 2 진행 중 (1/4) |
-| **다음 작업** | Task 2-2 Fine Matcher (`src/matching/fine_matcher.py`) |
+| **현재 Phase** | Phase 2 진행 중 — Task 2-1 ✅ / Task 2-2~2-4 ⬜ |
+| **다음 작업** | Task 2-2 Fine Matcher (`src/matching/fine_matcher.py` — SuperPoint/LoFTR) |
 | **블로커** | 없음 |
 | **마지막 업데이트** | 2026-05-10 |
 
 ### Phase 진행 현황
 
-| Phase | 상태 | 완료 조건 |
-|-------|------|-----------|
-| Phase 1 | 완료 | Task 1-1~1-4 모두 완료. 31 passed, 2 skipped. |
-| Phase 2 | 진행 중 | CNN 하이브리드 엔진 구축, 오분류율 1% 미만 |
-| Phase 3 | 대기 중 | 30% 축소 이미지 식별 성공, 응답 1.5초 이내 |
+| Phase | 상태 | 진행도 | 완료 조건 |
+|-------|------|--------|-----------|
+| Phase 1 | ✅ 완료 | 4/4 | Task 1-1~1-4 모두 완료. pytest 31 PASS, 2 skipped. |
+| Phase 2 | 🔄 진행 중 | 1/4 (Task 2-1만 완료) | Task 2-1 Coarse ✅ / Task 2-2 Fine ⬜ / Task 2-3 OCR ⬜ / Task 2-4 API ⬜ |
+| Phase 3 | ⬜ 대기 중 | 0/3 | 30% 축소 이미지 식별 성공, 응답 1.5초 이내 |
 
 ---
 
