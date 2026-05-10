@@ -288,12 +288,12 @@ def verify_with_ocr(
 - EasyOCR reader는 모듈 레벨 lazy init (최초 호출 시 1회 초기화)
 
 **TDD 체크리스트:**
-- [ ] Red: 해상도 충분 → 기둥 번호 추출 테스트
-- [ ] Red: 저해상도 → graceful skip (예외 없음) 테스트
-- [ ] Red: OCR 결과 불일치 → 신뢰도 하향 조정 테스트
-- [ ] Green: EasyOCR 통합 + 신뢰도 보정 로직
-- [ ] Refactor: 상수 정리, 타입 힌트 완성
-- [ ] SubAgent3 ‖ SubAgent4
+- [x] Red: 해상도 충분 → 기둥 번호 추출 테스트
+- [x] Red: 저해상도 → graceful skip (예외 없음) 테스트
+- [x] Red: OCR 결과 불일치 → 신뢰도 하향 조정 테스트
+- [x] Green: EasyOCR 통합 + 신뢰도 보정 로직
+- [x] Refactor: 상수 정리, 타입 힌트 완성
+- [x] SubAgent3 ‖ SubAgent4 — pytest 25/25 PASS, flake8/mypy/bandit 0 issues
 
 ### Task 2-4. FastAPI 엔드포인트 (`api/main.py`)
 
@@ -387,7 +387,8 @@ Response:
 | Task 1-4 패턴 매칭 | ✅ 완료 |
 | Task 2-1 Coarse Matcher | ✅ 완료 |
 | Task 2-2 Fine Matcher | ✅ 완료 |
-| Task 2-3 ~ 2-4 (Phase 2 나머지) | ⬜ 대기 |
+| Task 2-3 OCR 교차검증 | ✅ 완료 |
+| Task 2-4 FastAPI 엔드포인트 | ⬜ 대기 |
 | Phase 3 전체 | ⬜ 대기 |
 
 ---

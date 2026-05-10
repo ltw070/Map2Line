@@ -58,6 +58,7 @@ pip install -r requirements.txt
 > Phase 1이 완료되어 패턴 매칭 코어 기능을 직접 사용할 수 있습니다.
 > Phase 2-1 Coarse Matcher가 구현되어 CNN 기반 Top-K 후보 추출이 가능합니다.
 > Phase 2-2 Fine Matcher가 구현되어 Coarse 후보에서 최종 라인 선택이 가능합니다.
+> Phase 2-3 OCR 교차검증이 구현되어 기둥 번호 추출로 신뢰도 보정이 가능합니다.
 > API 서버(Phase 2-4)는 아직 구현 중입니다.
 
 ```bash

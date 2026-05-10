@@ -9,10 +9,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 완료 | Phase 1 (4/4) + Phase 2 Task 2-1, 2-2 ✅ |
-| 진행 중 | Phase 2 진행 중 (2/4) |
-| 다음 Task | **Task 2-3 OCR 교차검증** (`src/ocr/column_reader.py` — EasyOCR 기반 기둥 번호 추출) |
-| 테스트 현황 | pytest 69/69 PASS (2 skipped), 커버리지 88% |
+| 완료 | Phase 1 (4/4) + Phase 2 Task 2-1, 2-2, 2-3 ✅ |
+| 진행 중 | Phase 2 진행 중 (3/4) |
+| 다음 Task | **Task 2-4 FastAPI 엔드포인트** (`src/api/main.py` — POST /identify 구현) |
+| 테스트 현황 | pytest 94/94 PASS (2 skipped), 커버리지 81% |
 | 레포 | https://github.com/ltw070/Map2Line |
 
 ---

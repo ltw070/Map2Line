@@ -8,8 +8,8 @@
 
 | 항목 | 내용 |
 |------|------|
-| **현재 Phase** | Phase 2 진행 중 — Task 2-1 ✅ / Task 2-2 ✅ / Task 2-3~2-4 ⬜ |
-| **다음 작업** | Task 2-3 OCR 교차검증 (`src/ocr/column_reader.py`) |
+| **현재 Phase** | Phase 2 진행 중 — Task 2-1 ✅ / Task 2-2 ✅ / Task 2-3 ✅ / Task 2-4 ⬜ |
+| **다음 작업** | Task 2-4 FastAPI 엔드포인트 (`src/api/main.py`) |
 | **블로커** | 없음 |
 | **마지막 업데이트** | 2026-05-10 |
 
@@ -18,7 +18,7 @@
 | Phase | 상태 | 진행도 | 완료 조건 |
 |-------|------|--------|-----------|
 | Phase 1 | ✅ 완료 | 4/4 | Task 1-1~1-4 모두 완료. pytest 31 PASS, 2 skipped. |
-| Phase 2 | 🔄 진행 중 | 2/4 (Task 2-1, 2-2 완료) | Task 2-1 Coarse ✅ / Task 2-2 Fine ✅ / Task 2-3 OCR ⬜ / Task 2-4 API ⬜ |
+| Phase 2 | 🔄 진행 중 | 3/4 (Task 2-1~2-3 완료) | Task 2-1 Coarse ✅ / Task 2-2 Fine ✅ / Task 2-3 OCR ✅ / Task 2-4 API ⬜ |
 | Phase 3 | ⬜ 대기 중 | 0/3 | 30% 축소 이미지 식별 성공, 응답 1.5초 이내 |
 
 ---
@@ -33,6 +33,46 @@ mypy 2.0은 `python_version = 3.9` 미지원 (3.10+ 필요). `setup.cfg`를 `3.1
 ---
 
 ## 진행 이력
+
+---
+
+### 2026-05-10 — Task 2-3 OCR 교차검증 구현 완료
+
+- **변경 내용:**
+  - `requirements.txt`에 `easyocr>=1.7.0` 추가 (OCR 엔진 의존성)
+  - `PLAN.md` Task 2-3에 `verify_with_ocr()` 함수 인터페이스·상수 명세 추가
+  - `tests/test_column_reader.py` 생성 — 25개 테스트 (Red 단계)
+    - 반환 형식 5개 키 (line/section/confidence/inference_time_ms/ocr_text)
+    - 저해상도(너비 < 400px) → graceful skip, 신뢰도 유지, ocr_text=""
+    - OCR 일치 → confidence +0.05, section 갱신, ocr_text 저장
+    - OCR 불일치 → confidence -0.10, section 유지
+    - 신뢰도 0.0~1.0 클리핑
+    - EasyOCR 미설치(_EASYOCR_AVAILABLE=False) → 예외 없음, 신뢰도 유지
+    - fine_result side-effect 없음 (불변성 검증)
+    - 저해상도 skip 경로 10ms 이내 성능 검증
+  - `src/ocr/column_reader.py` 생성 (Green + Refactor)
+    - `verify_with_ocr()` 메인 함수
+    - EasyOCR lazy init (최초 호출 시 전역 `_reader` 1회 초기화)
+    - `_ocr_read_text()` 분리 (테스트 mock 용이)
+    - `_adjust_confidence()` 분리 (boost/penalty/클리핑 로직)
+    - `try: import easyocr ... except ImportError:` 폴백 패턴
+    - easyocr 재import 시 `_easyocr_lib` 별칭 사용 (F811 방지)
+
+- **근거:**
+  - PLAN.md Task 2-3 구현 대상 정의에 따름.
+  - EasyOCR 내부망 미설치 환경을 고려하여 `_EASYOCR_AVAILABLE` 플래그로 graceful degrade 구현.
+  - `_ocr_read_text` 함수 분리로 단위 테스트에서 실제 OCR 엔진 없이도 신뢰도 보정 로직을 검증 가능.
+  - 저해상도 기준(MIN_WIDTH_PX=400)은 NEXT_JOB.md 설계 사양에서 확정.
+
+- **결과:**
+  - pytest: 25/25 PASS (column_reader 단독), 전체 94 passed, 2 skipped
+  - flake8: 0 violations
+  - mypy: 0 issues
+  - bandit: 0 issues
+  - column_reader.py 커버리지 80%, 전체 81%
+  - 저해상도 skip 경로: < 1ms (OCR 추론 없음)
+
+- **다음 작업:** Task 2-4 FastAPI 엔드포인트 (`src/api/main.py`) 구현
 
 ---
 
