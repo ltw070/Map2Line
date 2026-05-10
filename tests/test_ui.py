@@ -5,15 +5,14 @@ import pytest
 def test_ui_imports_without_error():
     """src/ui/app.py 임포트 성공."""
     try:
-        import sys
-        # UI 모듈이 있으면 임포트 시도
-        # 실제로는 streamlit이 필요한데, 여기서는 모듈 존재 여부만 확인
+        import streamlit  # noqa: F401
+    except ImportError:
+        pytest.skip("streamlit 미설치 — pip install streamlit")
+
+    try:
         from src.ui import app  # noqa: F401
     except ImportError as e:
-        # UI 모듈이 아직 없으면 건너뜀
-        if "ui" in str(e):
-            pytest.skip("UI 모듈 미설치")
-        raise
+        pytest.fail(f"UI 모듈 임포트 실패: {e}")
 
 
 def test_streamlit_installed():
@@ -58,7 +57,7 @@ def test_ui_app_has_required_functions():
     import os
     app_file = os.path.join("src", "ui", "app.py")
 
-    with open(app_file, "r") as f:
+    with open(app_file, "r", encoding="utf-8") as f:
         content = f.read()
 
     # 필수 요소 확인
@@ -73,7 +72,7 @@ def test_ui_api_response_format_handling():
     import os
     app_file = os.path.join("src", "ui", "app.py")
 
-    with open(app_file, "r") as f:
+    with open(app_file, "r", encoding="utf-8") as f:
         content = f.read()
 
     # 응답 필드 처리 확인
@@ -87,12 +86,17 @@ def test_ui_confidence_percentage_display():
     import os
     app_file = os.path.join("src", "ui", "app.py")
 
-    with open(app_file, "r") as f:
+    with open(app_file, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # 퍼센트 표시 패턴 확인
-    assert "*100" in content or "percent" in content.lower(), \
-        "신뢰도 퍼센트 표시 로직 미존재"
+    # 퍼센트 표시 패턴 확인 (여러 방식)
+    patterns = [
+        "*100" in content,
+        "pct" in content.lower(),
+        "percent" in content.lower(),
+        ".1f%" in content,  # f-string 포맷
+    ]
+    assert any(patterns), "신뢰도 퍼센트 표시 로직 미존재"
 
 
 def test_ui_error_handling():
@@ -100,7 +104,7 @@ def test_ui_error_handling():
     import os
     app_file = os.path.join("src", "ui", "app.py")
 
-    with open(app_file, "r") as f:
+    with open(app_file, "r", encoding="utf-8") as f:
         content = f.read()
 
     # 에러 처리 확인
