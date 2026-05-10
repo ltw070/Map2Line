@@ -7,7 +7,6 @@ PRD §5 데이터 증강 대응
 """
 import numpy as np
 import pytest
-from pathlib import Path
 import cv2
 
 from src.preprocessing.data_augmentation import augment_image, augment_dataset
