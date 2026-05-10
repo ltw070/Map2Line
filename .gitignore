@@ -1,0 +1,53 @@
+# MCP 설정 (토큰 포함 — 절대 커밋 금지)
+.mcp.json
+
+# Claude Code 로컬 설정
+.claude/settings.local.json
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# 환경 변수
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 테스트·커버리지
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# 모델 파일 (용량 큰 바이너리)
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.pkl
+
+# 데이터
+data/raw/
+data/processed/
+data/augmented/
+
+# 참조 도면 (원본 이미지 — 용량·보안 이슈)
+ref_map/
+models/
