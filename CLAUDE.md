@@ -16,8 +16,11 @@
 ## MCP 서버
 
 ### GitHub MCP 설정
-- **설정 파일:** `.mcp.json` (gitignored — 토큰 포함)
-- **실행 파일:** `D:\cla\99_github-mcp-server\github-mcp-server.exe`
+- **MCP 서버 설정:** `.mcp.json` (gitignored — 토큰 포함)
+  - 실행 파일: `D:\cla\99_github-mcp-server\github-mcp-server.exe`
+  - GitHub 개인 액세스 토큰 저장
+- **Claude Code 설정:** `.claude/settings.json` (로컬 활성화 설정)
+  - `enabledMcpjsonServers: ["github-general"]` 설정으로 MCP 활성화
 - **용도:** GitHub 이슈·PR 조회, 코드 검색, 리포지토리 관리, 파일 업로드
 
 > `.mcp.json`은 민감 정보(토큰)가 포함되므로 절대 git에 커밋하지 않는다.
